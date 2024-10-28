@@ -5,7 +5,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class StyleResponse {
-    private Long id;
-    private String nameStyle;
+public class RecordsResponse {
+    public Long id;
+    public String name;
 }
