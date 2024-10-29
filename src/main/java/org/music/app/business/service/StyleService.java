@@ -1,5 +1,6 @@
 package org.music.app.business.service;
 
+import io.quarkus.panache.common.Parameters;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
 import org.music.app.api.dto.request.StyleRequest;
@@ -42,5 +43,9 @@ public class StyleService {
         entity.setNameStyle(styleResponse.getNameStyle());
         repostiory.persistAndFlush(entity);
         return mapper.toResponse(entity);
+    }
+
+    public StyleResponse findByName(String name){
+        return mapper.toResponse(repostiory.find("nameStyle = :name", Parameters.with("name", name)).firstResult());
     }
 }

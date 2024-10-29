@@ -26,6 +26,14 @@ public class StyleMapper {
         return entity;
     }
 
+
+    public Style toEntityByResponse(StyleResponse request){
+        var entity = new Style();
+        entity.setId(request.getId().intValue());
+        entity.setNameStyle(request.getNameStyle());
+        return entity;
+    }
+
     public List<StyleResponse> toList(List<Style> list){
         return list.stream()
                 .filter(Objects::nonNull)
