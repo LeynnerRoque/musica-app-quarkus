@@ -3,7 +3,6 @@ package org.music.app.domain.repository.mappers;
 import jakarta.enterprise.context.ApplicationScoped;
 import org.music.app.api.dto.request.ArtistsRequest;
 import org.music.app.api.dto.response.ArtistsResponse;
-import org.music.app.business.service.RecordService;
 import org.music.app.business.utils.DateConverter;
 import org.music.app.domain.model.Artists;
 
