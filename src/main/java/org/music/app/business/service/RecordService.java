@@ -27,6 +27,7 @@ public class RecordService {
         return "Created";
     }
 
+    @Transactional
     public RecordsResponse update(RecordsResponse response){
         var entity = repository.findByIdOptional(response.getId()).get();
         entity.setName(response.getName());
