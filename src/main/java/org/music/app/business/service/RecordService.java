@@ -1,5 +1,6 @@
 package org.music.app.business.service;
 
+import io.quarkus.panache.common.Parameters;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
 import org.music.app.api.dto.request.RecordsRequest;
@@ -41,5 +42,9 @@ public class RecordService {
 
     public List<RecordsResponse> listAll(){
         return mapper.toList(repository.listAll());
+    }
+
+    public RecordsResponse findByName(String name){
+        return mapper.toResponse(repository.find("name = :name", Parameters.with("name", name)).firstResult());
     }
 }

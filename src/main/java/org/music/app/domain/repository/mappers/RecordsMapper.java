@@ -25,6 +25,14 @@ public class RecordsMapper {
         return entity;
     }
 
+
+    public Record toEntityByResponse(RecordsResponse request){
+        var entity = new Record();
+        entity.setId(request.getId().intValue());
+        entity.setName(request.getName());
+        return entity;
+    }
+
     public List<RecordsResponse> toList(List<Record> records){
         return records.stream()
                 .filter(Objects::nonNull)
