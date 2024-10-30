@@ -24,16 +24,24 @@ public class RecordService {
 
     @Transactional
     public String create(RecordsRequest request){
-        repository.persist(mapper.toEntity(request));
-        return "Created";
+        try{
+            repository.persist(mapper.toEntity(request));
+            return "Created";
+        }catch (Exception e){
+            return "Error on create object";
+        }
     }
 
     @Transactional
     public RecordsResponse update(RecordsResponse response){
-        var entity = repository.findByIdOptional(response.getId()).get();
-        entity.setName(response.getName());
-        repository.persistAndFlush(entity);
-        return mapper.toResponse(entity);
+        try{
+            var entity = repository.findByIdOptional(response.getId()).get();
+            entity.setName(response.getName());
+            repository.persistAndFlush(entity);
+            return mapper.toResponse(entity);
+        }catch (Exception e){
+            return null;
+        }
     }
 
     public RecordsResponse findById(Long id){

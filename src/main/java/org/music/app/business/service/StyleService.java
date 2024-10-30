@@ -24,8 +24,12 @@ public class StyleService {
 
     @Transactional
     public String create(StyleRequest request){
-        repostiory.persist(mapper.toEntity(request));
-        return "Created";
+        try{
+            repostiory.persist(mapper.toEntity(request));
+            return "Created";
+        }catch (Exception e){
+            return "Error on create object";
+        }
     }
 
     public StyleResponse findById(Long id){
@@ -39,10 +43,15 @@ public class StyleService {
 
     @Transactional
     public StyleResponse update(StyleResponse styleResponse){
-        var entity = repostiory.findByIdOptional(styleResponse.getId()).get();
-        entity.setNameStyle(styleResponse.getNameStyle());
-        repostiory.persistAndFlush(entity);
-        return mapper.toResponse(entity);
+        try{
+            var entity = repostiory.findByIdOptional(styleResponse.getId()).get();
+            entity.setNameStyle(styleResponse.getNameStyle());
+            repostiory.persistAndFlush(entity);
+            return mapper.toResponse(entity);
+        }catch (Exception e){
+            return null;
+        }
+
     }
 
     public StyleResponse findByName(String name){

@@ -33,26 +33,35 @@ public class ArtistsService {
 
     @Transactional
     public String create(ArtistsRequest request){
-        var entity = mapper.toEntity(request);
-        var record = service.findById(request.recordCode());
-        entity.setRecordByRecordId(recordsMapper.toEntityByResponse(record));
-        repository.persist(entity);
-        return "Created";
+        try{
+            var entity = mapper.toEntity(request);
+            var record = service.findById(request.recordCode());
+            entity.setRecordByRecordId(recordsMapper.toEntityByResponse(record));
+            repository.persist(entity);
+            return "Created";
+        }catch (Exception e){
+         return "Error on create object";
+        }
+
     }
 
     @Transactional
     public ArtistsResponse update(ArtistsResponse response){
-        var entity = repository.findByIdOptional(response.getId()).get();
-        var record = service.findByName(response.getRecord());
-        entity.setId(response.getId().intValue());
-        entity.setName(response.getName());
-        entity.setType(response.getType());
-        entity.setOrigin(response.getOrigin());
-        entity.setDateCreate(converter.convertToDate(response.getDateCreated()));
-        entity.setRecordByRecordId(recordsMapper.toEntityByResponse(record));
+        try{
+            var entity = repository.findByIdOptional(response.getId()).get();
+            var record = service.findByName(response.getRecord());
+            entity.setId(response.getId().intValue());
+            entity.setName(response.getName());
+            entity.setType(response.getType());
+            entity.setOrigin(response.getOrigin());
+            entity.setDateCreate(converter.convertToDate(response.getDateCreated()));
+            entity.setRecordByRecordId(recordsMapper.toEntityByResponse(record));
 
-        repository.persistAndFlush(entity);
-        return response;
+            repository.persistAndFlush(entity);
+            return response;
+        }catch (Exception e){
+            return null;
+        }
     }
 
     public ArtistsResponse findById(Long id){
