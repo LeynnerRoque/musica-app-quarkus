@@ -1,7 +1,11 @@
 package org.music.app.business.service;
 
+import io.quarkus.rest.client.reactive.QuarkusRestClientBuilder;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
+import lombok.extern.slf4j.Slf4j;
+import org.eclipse.microprofile.rest.client.inject.RestClient;
+import org.music.app.api.client.ClientAPI;
 import org.music.app.api.dto.request.AlbunsRequest;
 import org.music.app.api.dto.response.AlbunsResponse;
 import org.music.app.domain.repository.impl.AlbunsRepository;
@@ -9,8 +13,11 @@ import org.music.app.domain.repository.mappers.AlbunsMapper;
 import org.music.app.domain.repository.mappers.ArtistsMapper;
 import org.music.app.domain.repository.mappers.StyleMapper;
 
+import java.net.URI;
 import java.util.List;
+import java.util.Set;
 
+@Slf4j
 @ApplicationScoped
 public class AlbunsService {
 
@@ -22,6 +29,9 @@ public class AlbunsService {
     private final StyleMapper styleMapper;
 
 
+    private final ClientAPI clientAPI;
+
+
     public AlbunsService(AlbunsRepository repository, AlbunsMapper mapper,
                          ArtistsService artistsService, ArtistsMapper artistsMapper,
                          StyleService styleService, StyleMapper styleMapper) {
@@ -31,6 +41,9 @@ public class AlbunsService {
         this.artistsMapper = artistsMapper;
         this.styleService = styleService;
         this.styleMapper = styleMapper;
+        clientAPI = QuarkusRestClientBuilder
+                .newBuilder().baseUri(URI.create("http://localhost:9090/"))
+                .build(ClientAPI.class);
     }
 
 
@@ -79,6 +92,11 @@ public class AlbunsService {
 
     public List<AlbunsResponse> listAll(){
         return mapper.toList(repository.listAll());
+    }
+
+
+    public Set<AlbunsResponse> getByOtherAPI(Long id){
+        return clientAPI.getById(id);
     }
 
 }
