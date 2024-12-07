@@ -1,6 +1,5 @@
 package org.music.app.business.service;
 
-import io.quarkus.rest.client.reactive.QuarkusRestClientBuilder;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
@@ -13,9 +12,7 @@ import org.music.app.domain.repository.mappers.AlbunsMapper;
 import org.music.app.domain.repository.mappers.ArtistsMapper;
 import org.music.app.domain.repository.mappers.StyleMapper;
 
-import java.net.URI;
 import java.util.List;
-import java.util.Set;
 
 @Slf4j
 @ApplicationScoped
