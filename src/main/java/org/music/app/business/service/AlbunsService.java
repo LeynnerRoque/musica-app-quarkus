@@ -28,8 +28,8 @@ public class AlbunsService {
     private final StyleService styleService;
     private final StyleMapper styleMapper;
 
-
-    private final ClientAPI clientAPI;
+    @RestClient
+    private ClientAPI clientAPI;
 
 
     public AlbunsService(AlbunsRepository repository, AlbunsMapper mapper,
@@ -41,9 +41,6 @@ public class AlbunsService {
         this.artistsMapper = artistsMapper;
         this.styleService = styleService;
         this.styleMapper = styleMapper;
-        clientAPI = QuarkusRestClientBuilder
-                .newBuilder().baseUri(URI.create("http://localhost:9090/"))
-                .build(ClientAPI.class);
     }
 
 
@@ -94,8 +91,8 @@ public class AlbunsService {
         return mapper.toList(repository.listAll());
     }
 
-
-    public Set<AlbunsResponse> getByOtherAPI(Long id){
+    //Access API
+    public AlbunsResponse getByOtherAPI(Long id){
         return clientAPI.getById(id);
     }
 

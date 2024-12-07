@@ -1,21 +1,23 @@
 package org.music.app.api.client;
 
-import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.QueryParam;
+import io.quarkus.rest.client.reactive.ClientQueryParam;
+import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
 import org.music.app.api.dto.response.AlbunsResponse;
 
+import java.util.List;
 import java.util.Set;
 
-@Path("albuns/")
-@RegisterRestClient(configKey = "albuns-getBy")
+
+@RegisterRestClient(baseUri = "http://localhost:9090")
+@Path("/albuns")
+@ClientQueryParam(name = "id", value = "")
 public interface ClientAPI {
 
     @GET
-    @Consumes(MediaType.APPLICATION_JSON)
-    Set<AlbunsResponse> getById(@QueryParam("id") Long id);
+    @Path("/")
+    @Produces(MediaType.APPLICATION_JSON)
+    AlbunsResponse getById(@QueryParam("id") Long id);
 
 }
