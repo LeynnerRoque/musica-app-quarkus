@@ -9,7 +9,6 @@ import org.music.app.api.dto.response.AlbunsResponse;
 
 @RegisterRestClient(baseUri = "http://localhost:9090")
 @Path("/albuns")
-@ClientQueryParam(name = "id", value = "")
 public interface ClientAPI {
 
     @GET
