@@ -1,6 +1,5 @@
 package org.music.app.api.client;
 
-import io.quarkus.rest.client.reactive.ClientQueryParam;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
