@@ -11,6 +11,7 @@ import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.music.app.api.client.ClientAPI;
 import org.music.app.api.dto.request.AlbunsRequest;
 import org.music.app.api.dto.response.AlbunsResponse;
+import org.music.app.business.fallbacks.FallbackServiceHandler;
 import org.music.app.domain.repository.impl.AlbunsRepository;
 import org.music.app.domain.repository.mappers.AlbunsMapper;
 import org.music.app.domain.repository.mappers.ArtistsMapper;
@@ -80,6 +81,7 @@ public class AlbunsService {
     @Retry(maxRetries = 5, delay = 200, delayUnit = ChronoUnit.MILLIS)
     @Timeout(1000)
     @CircuitBreaker(requestVolumeThreshold = 4,failureRatio = 0.75, delay = 10, delayUnit = ChronoUnit.SECONDS)
+    @Fallback(FallbackServiceHandler.class)
     public AlbunsResponse update(AlbunsResponse response){
         try{
             var entity = repository.findByIdOptional(response.getId()).get();
@@ -139,10 +141,5 @@ public class AlbunsService {
         }
     }
 
-
-    @Fallback(fallbackMethod = "create")
-    public String callFallBackCreate(){
-        return "some troubles in transaction ";
-    }
 
 }

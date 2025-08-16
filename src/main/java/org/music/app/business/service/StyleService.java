@@ -5,10 +5,12 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.faulttolerance.CircuitBreaker;
+import org.eclipse.microprofile.faulttolerance.Fallback;
 import org.eclipse.microprofile.faulttolerance.Retry;
 import org.eclipse.microprofile.faulttolerance.Timeout;
 import org.music.app.api.dto.request.StyleRequest;
 import org.music.app.api.dto.response.StyleResponse;
+import org.music.app.business.fallbacks.FallbackServiceHandler;
 import org.music.app.domain.repository.impl.StyleRepostiory;
 import org.music.app.domain.repository.mappers.StyleMapper;
 
@@ -32,6 +34,7 @@ public class StyleService {
     @Retry(maxRetries = 5, delay = 200, delayUnit = ChronoUnit.MILLIS)
     @Timeout(1000)
     @CircuitBreaker(requestVolumeThreshold = 4,failureRatio = 0.75, delay = 10, delayUnit = ChronoUnit.SECONDS)
+    @Fallback(FallbackServiceHandler.class)
     public String create(StyleRequest request){
         try{
             repostiory.persist(mapper.toEntity(request));

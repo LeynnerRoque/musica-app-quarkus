@@ -5,10 +5,12 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.faulttolerance.CircuitBreaker;
+import org.eclipse.microprofile.faulttolerance.Fallback;
 import org.eclipse.microprofile.faulttolerance.Retry;
 import org.eclipse.microprofile.faulttolerance.Timeout;
 import org.music.app.api.dto.request.ArtistsRequest;
 import org.music.app.api.dto.response.ArtistsResponse;
+import org.music.app.business.fallbacks.FallbackServiceHandler;
 import org.music.app.business.utils.DateConverter;
 import org.music.app.domain.repository.impl.ArtistsRepository;
 import org.music.app.domain.repository.mappers.ArtistsMapper;
@@ -41,6 +43,7 @@ public class ArtistsService {
     @Retry(maxRetries = 5, delay = 200, delayUnit = ChronoUnit.MILLIS)
     @Timeout(1000)
     @CircuitBreaker(requestVolumeThreshold = 4,failureRatio = 0.75, delay = 10, delayUnit = ChronoUnit.SECONDS)
+    @Fallback(FallbackServiceHandler.class)
     public String create(ArtistsRequest request){
         try{
             var entity = mapper.toEntity(request);
