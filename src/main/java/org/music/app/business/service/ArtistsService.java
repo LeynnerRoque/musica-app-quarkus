@@ -3,6 +3,10 @@ package org.music.app.business.service;
 import io.quarkus.panache.common.Parameters;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
+import lombok.extern.slf4j.Slf4j;
+import org.eclipse.microprofile.faulttolerance.CircuitBreaker;
+import org.eclipse.microprofile.faulttolerance.Retry;
+import org.eclipse.microprofile.faulttolerance.Timeout;
 import org.music.app.api.dto.request.ArtistsRequest;
 import org.music.app.api.dto.response.ArtistsResponse;
 import org.music.app.business.utils.DateConverter;
@@ -10,9 +14,11 @@ import org.music.app.domain.repository.impl.ArtistsRepository;
 import org.music.app.domain.repository.mappers.ArtistsMapper;
 import org.music.app.domain.repository.mappers.RecordsMapper;
 
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 @ApplicationScoped
+@Slf4j
 public class ArtistsService {
 
     private  final ArtistsRepository repository;
@@ -32,6 +38,9 @@ public class ArtistsService {
     }
 
     @Transactional
+    @Retry(maxRetries = 5, delay = 200, delayUnit = ChronoUnit.MILLIS)
+    @Timeout(1000)
+    @CircuitBreaker(requestVolumeThreshold = 4,failureRatio = 0.75, delay = 10, delayUnit = ChronoUnit.SECONDS)
     public String create(ArtistsRequest request){
         try{
             var entity = mapper.toEntity(request);
@@ -40,12 +49,16 @@ public class ArtistsService {
             repository.persist(entity);
             return "Created";
         }catch (Exception e){
+            log.warn("Error on create Obbject : "+e.getCause());
          return "Error on create object";
         }
 
     }
 
     @Transactional
+    @Retry(maxRetries = 5, delay = 200, delayUnit = ChronoUnit.MILLIS)
+    @Timeout(1000)
+    @CircuitBreaker(requestVolumeThreshold = 4,failureRatio = 0.75, delay = 10, delayUnit = ChronoUnit.SECONDS)
     public ArtistsResponse update(ArtistsResponse response){
         try{
             var entity = repository.findByIdOptional(response.getId()).get();
@@ -60,19 +73,46 @@ public class ArtistsService {
             repository.persistAndFlush(entity);
             return response;
         }catch (Exception e){
+            log.warn("Error on update Obbject : "+e.getCause());
             return null;
         }
     }
 
+    @Retry(maxRetries = 5, delay = 200, delayUnit = ChronoUnit.MILLIS)
+    @Timeout(1000)
+    @CircuitBreaker(requestVolumeThreshold = 4,failureRatio = 0.75, delay = 10, delayUnit = ChronoUnit.SECONDS)
     public ArtistsResponse findById(Long id){
-        return mapper.toResponse(repository.findById(id));
+        try{
+            return mapper.toResponse(repository.findById(id));
+        } catch (Exception e) {
+            log.warn("Error on find Obbject : "+e.getCause());
+            return null;
+        }
+
     }
 
+    @Retry(maxRetries = 5, delay = 200, delayUnit = ChronoUnit.MILLIS)
+    @Timeout(1000)
+    @CircuitBreaker(requestVolumeThreshold = 4,failureRatio = 0.75, delay = 10, delayUnit = ChronoUnit.SECONDS)
     public List<ArtistsResponse> listAll(){
-        return mapper.tolist(repository.listAll());
+        try{
+            return mapper.tolist(repository.listAll());
+        } catch (Exception e) {
+            log.warn("Error on list Obbject : "+e.getCause());
+            return null;
+        }
+
     }
 
+    @Retry(maxRetries = 5, delay = 200, delayUnit = ChronoUnit.MILLIS)
+    @Timeout(1000)
+    @CircuitBreaker(requestVolumeThreshold = 4,failureRatio = 0.75, delay = 10, delayUnit = ChronoUnit.SECONDS)
     public ArtistsResponse findByName(String name){
-        return mapper.toResponse(repository.find("name = :name", Parameters.with("name", name)).firstResult());
+        try{
+            return mapper.toResponse(repository.find("name = :name", Parameters.with("name", name)).firstResult());
+        } catch (Exception e) {
+            return null;
+        }
+
     }
 }
