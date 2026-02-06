@@ -40,10 +40,6 @@ public class ArtistsService {
     }
 
     @Transactional
-    @Retry(maxRetries = 5, delay = 200, delayUnit = ChronoUnit.MILLIS)
-    @Timeout(1000)
-    @CircuitBreaker(requestVolumeThreshold = 4,failureRatio = 0.75, delay = 10, delayUnit = ChronoUnit.SECONDS)
-    @Fallback(FallbackServiceHandler.class)
     public String create(ArtistsRequest request){
         try{
             var entity = mapper.toEntity(request);
@@ -59,9 +55,6 @@ public class ArtistsService {
     }
 
     @Transactional
-    @Retry(maxRetries = 5, delay = 200, delayUnit = ChronoUnit.MILLIS)
-    @Timeout(1000)
-    @CircuitBreaker(requestVolumeThreshold = 4,failureRatio = 0.75, delay = 10, delayUnit = ChronoUnit.SECONDS)
     public ArtistsResponse update(ArtistsResponse response){
         try{
             var entity = repository.findByIdOptional(response.getId()).get();
@@ -81,9 +74,6 @@ public class ArtistsService {
         }
     }
 
-    @Retry(maxRetries = 5, delay = 200, delayUnit = ChronoUnit.MILLIS)
-    @Timeout(1000)
-    @CircuitBreaker(requestVolumeThreshold = 4,failureRatio = 0.75, delay = 10, delayUnit = ChronoUnit.SECONDS)
     public ArtistsResponse findById(Long id){
         try{
             return mapper.toResponse(repository.findById(id));
@@ -94,9 +84,6 @@ public class ArtistsService {
 
     }
 
-    @Retry(maxRetries = 5, delay = 200, delayUnit = ChronoUnit.MILLIS)
-    @Timeout(1000)
-    @CircuitBreaker(requestVolumeThreshold = 4,failureRatio = 0.75, delay = 10, delayUnit = ChronoUnit.SECONDS)
     public List<ArtistsResponse> listAll(){
         try{
             return mapper.tolist(repository.listAll());
@@ -107,9 +94,6 @@ public class ArtistsService {
 
     }
 
-    @Retry(maxRetries = 5, delay = 200, delayUnit = ChronoUnit.MILLIS)
-    @Timeout(1000)
-    @CircuitBreaker(requestVolumeThreshold = 4,failureRatio = 0.75, delay = 10, delayUnit = ChronoUnit.SECONDS)
     public ArtistsResponse findByName(String name){
         try{
             return mapper.toResponse(repository.find("name = :name", Parameters.with("name", name)).firstResult());

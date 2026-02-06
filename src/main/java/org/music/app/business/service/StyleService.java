@@ -31,10 +31,6 @@ public class StyleService {
     }
 
     @Transactional
-    @Retry(maxRetries = 5, delay = 200, delayUnit = ChronoUnit.MILLIS)
-    @Timeout(1000)
-    @CircuitBreaker(requestVolumeThreshold = 4,failureRatio = 0.75, delay = 10, delayUnit = ChronoUnit.SECONDS)
-    @Fallback(FallbackServiceHandler.class)
     public String create(StyleRequest request){
         try{
             repostiory.persist(mapper.toEntity(request));
@@ -45,9 +41,6 @@ public class StyleService {
         }
     }
 
-    @Retry(maxRetries = 5, delay = 200, delayUnit = ChronoUnit.MILLIS)
-    @Timeout(1000)
-    @CircuitBreaker(requestVolumeThreshold = 4,failureRatio = 0.75, delay = 10, delayUnit = ChronoUnit.SECONDS)
     public StyleResponse findById(Long id){
         try{
             var response = repostiory.findById(id);
@@ -59,9 +52,6 @@ public class StyleService {
     }
 
     @Transactional
-    @Retry(maxRetries = 5, delay = 200, delayUnit = ChronoUnit.MILLIS)
-    @Timeout(1000)
-    @CircuitBreaker(requestVolumeThreshold = 4,failureRatio = 0.75, delay = 10, delayUnit = ChronoUnit.SECONDS)
     public StyleResponse update(StyleResponse styleResponse){
         try{
             var entity = repostiory.findByIdOptional(styleResponse.getId()).get();
@@ -75,9 +65,6 @@ public class StyleService {
 
     }
 
-    @Retry(maxRetries = 5, delay = 200, delayUnit = ChronoUnit.MILLIS)
-    @Timeout(1000)
-    @CircuitBreaker(requestVolumeThreshold = 4,failureRatio = 0.75, delay = 10, delayUnit = ChronoUnit.SECONDS)
     public List<StyleResponse> listAll(){
         try{
             return mapper.toList(repostiory.listAll());
@@ -87,9 +74,6 @@ public class StyleService {
         }
     }
 
-    @Retry(maxRetries = 5, delay = 200, delayUnit = ChronoUnit.MILLIS)
-    @Timeout(1000)
-    @CircuitBreaker(requestVolumeThreshold = 4,failureRatio = 0.75, delay = 10, delayUnit = ChronoUnit.SECONDS)
     public StyleResponse findByName(String name){
         try{
             return mapper.toResponse(repostiory.find("nameStyle = :name", Parameters.with("name", name)).firstResult());

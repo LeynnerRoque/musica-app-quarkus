@@ -31,10 +31,6 @@ public class RecordService {
     }
 
     @Transactional
-    @Retry(maxRetries = 5, delay = 200, delayUnit = ChronoUnit.MILLIS)
-    @Timeout(1000)
-    @CircuitBreaker(requestVolumeThreshold = 4,failureRatio = 0.75, delay = 10, delayUnit = ChronoUnit.SECONDS)
-    @Fallback(FallbackServiceHandler.class)
     public String create(RecordsRequest request){
         try{
             repository.persist(mapper.toEntity(request));
@@ -46,9 +42,6 @@ public class RecordService {
     }
 
     @Transactional
-    @Retry(maxRetries = 5, delay = 200, delayUnit = ChronoUnit.MILLIS)
-    @Timeout(1000)
-    @CircuitBreaker(requestVolumeThreshold = 4,failureRatio = 0.75, delay = 10, delayUnit = ChronoUnit.SECONDS)
     public RecordsResponse update(RecordsResponse response){
         try{
             var entity = repository.findByIdOptional(response.getId()).get();
@@ -61,9 +54,6 @@ public class RecordService {
         }
     }
 
-    @Retry(maxRetries = 5, delay = 200, delayUnit = ChronoUnit.MILLIS)
-    @Timeout(1000)
-    @CircuitBreaker(requestVolumeThreshold = 4,failureRatio = 0.75, delay = 10, delayUnit = ChronoUnit.SECONDS)
     public RecordsResponse findById(Long id){
         try{
             return mapper.toResponse(repository.findById(id));
@@ -73,9 +63,6 @@ public class RecordService {
         }
     }
 
-    @Retry(maxRetries = 5, delay = 200, delayUnit = ChronoUnit.MILLIS)
-    @Timeout(1000)
-    @CircuitBreaker(requestVolumeThreshold = 4,failureRatio = 0.75, delay = 10, delayUnit = ChronoUnit.SECONDS)
     public List<RecordsResponse> listAll(){
         try{
             return mapper.toList(repository.listAll());
@@ -85,9 +72,6 @@ public class RecordService {
         }
     }
 
-    @Retry(maxRetries = 5, delay = 200, delayUnit = ChronoUnit.MILLIS)
-    @Timeout(1000)
-    @CircuitBreaker(requestVolumeThreshold = 4,failureRatio = 0.75, delay = 10, delayUnit = ChronoUnit.SECONDS)
     public RecordsResponse findByName(String name){
         try{
             return mapper.toResponse(repository.find("name = :name", Parameters.with("name", name)).firstResult());

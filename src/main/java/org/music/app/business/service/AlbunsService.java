@@ -48,14 +48,6 @@ public class AlbunsService {
 
 
     @Transactional
-    @Retry(maxRetries = 5, delay = 200, delayUnit = ChronoUnit.MILLIS)
-    @Timeout(1000)
-    @CircuitBreaker(
-            requestVolumeThreshold = 4, // O disjuntor abre após 4 falhas
-            failureRatio = 0.75, // Abertura do circuito se mais de 75% das chamadas falharem
-            delay = 10, // Espera 10 segundos antes de tentar novamente
-            delayUnit = ChronoUnit.SECONDS
-    )
     public String create(AlbunsRequest request){
         try{
             var entity = mapper.toEntity(request);
@@ -78,10 +70,6 @@ public class AlbunsService {
     }
 
     @Transactional
-    @Retry(maxRetries = 5, delay = 200, delayUnit = ChronoUnit.MILLIS)
-    @Timeout(1000)
-    @CircuitBreaker(requestVolumeThreshold = 4,failureRatio = 0.75, delay = 10, delayUnit = ChronoUnit.SECONDS)
-    @Fallback(FallbackServiceHandler.class)
     public AlbunsResponse update(AlbunsResponse response){
         try{
             var entity = repository.findByIdOptional(response.getId()).get();
@@ -102,9 +90,6 @@ public class AlbunsService {
         }
     }
 
-    @Retry(maxRetries = 5, delay = 200, delayUnit = ChronoUnit.MILLIS)
-    @Timeout(2000)
-    @CircuitBreaker(requestVolumeThreshold = 4,failureRatio = 0.75, delay = 10, delayUnit = ChronoUnit.SECONDS)
     public AlbunsResponse findById(Long id){
         try{
             return mapper.toResponse(repository.findById(id));
@@ -115,9 +100,6 @@ public class AlbunsService {
 
     }
 
-    @Retry(maxRetries = 5, delay = 200, delayUnit = ChronoUnit.MILLIS)
-    @Timeout(2000)
-    @CircuitBreaker(requestVolumeThreshold = 4,failureRatio = 0.75, delay = 10, delayUnit = ChronoUnit.SECONDS)
     public List<AlbunsResponse> listAll(){
         try{
             return mapper.toList(repository.listAll());
@@ -128,10 +110,6 @@ public class AlbunsService {
 
     }
 
-    //Access API
-    @Retry(maxRetries = 5, delay = 200, delayUnit = ChronoUnit.MILLIS)
-    @Timeout(3000)
-    @CircuitBreaker(requestVolumeThreshold = 4,failureRatio = 0.75, delay = 10, delayUnit = ChronoUnit.SECONDS)
     public AlbunsResponse getByOtherAPI(Long id){
         try{
             return clientAPI.getById(id);
