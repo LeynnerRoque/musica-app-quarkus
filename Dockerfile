@@ -1,18 +1,14 @@
-# Estágio 1: Build
-FROM maven:3.9.6-eclipse-temurin-17 AS build
+# Estágio 1: Build (Usando JDK 21)
+FROM maven:3.9.6-eclipse-temurin-21 AS build
 WORKDIR /project
-
-# Copia tudo para o container (incluindo o pom.xml e a pasta src)
 COPY . .
-
-# Executa o build do Quarkus
 RUN mvn clean package -DskipTests
 
-# Estágio 2: Runtime
-FROM eclipse-temurin:17-jre
+# Estágio 2: Runtime (Usando JRE 21)
+FROM eclipse-temurin:21-jre
+ENV LANGUAGE='en_US:en'
 WORKDIR /deployments
 
-# Copia os artefatos gerados pelo Quarkus no estágio anterior
 COPY --from=build /project/target/quarkus-app/lib/ /deployments/lib/
 COPY --from=build /project/target/quarkus-app/*.jar /deployments/
 COPY --from=build /project/target/quarkus-app/app/ /deployments/app/
