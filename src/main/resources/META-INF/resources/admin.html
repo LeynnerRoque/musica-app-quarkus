@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Music App - Administrador</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .accordion-content { transition: max-height 0.3s ease-out; }
+        .step-active { color: #22d3ee; }
+        .step-done { color: #10b981; }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 font-sans">
+
+<div class="max-w-6xl mx-auto p-6">
+    <header class="flex justify-between items-center mb-8 border-b border-slate-700 pb-4">
+        <div>
+            <h1 class="text-2xl font-bold text-cyan-400">Painel de Administração</h1>
+            <p class="text-sm text-slate-400">Gerenciamento completo do catálogo musical</p>
+        </div>
+        <div class="space-x-4">
+            <button onclick="refreshCurrentTable()" class="bg-slate-800 hover:bg-slate-700 px-4 py-2 rounded text-sm transition border border-slate-600">
+                <i class="fa-solid fa-sync mr-2"></i>Sincronizar Dados
+            </button>
+            <a href="/" class="bg-cyan-900/50 hover:bg-cyan-800 px-4 py-2 rounded text-sm transition border border-cyan-700">Home</a>
+        </div>
+    </header>
+
+    <div class="flex items-center justify-between mb-10 bg-slate-800/50 p-4 rounded-lg border border-slate-700">
+        <div class="step flex items-center gap-2 text-cyan-400" id="step-1-visual">
+            <span class="w-8 h-8 rounded-full bg-cyan-900 flex items-center justify-center font-bold border border-cyan-500">1</span>
+            <span class="text-sm font-medium">Base</span>
+        </div>
+        <div class="h-px bg-slate-700 flex-1 mx-4"></div>
+        <div class="step flex items-center gap-2 text-slate-500" id="step-2-visual">
+            <span class="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center font-bold">2</span>
+            <span class="text-sm font-medium">Artistas</span>
+        </div>
+        <div class="h-px bg-slate-700 flex-1 mx-4"></div>
+        <div class="step flex items-center gap-2 text-slate-500" id="step-3-visual">
+            <span class="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center font-bold">3</span>
+            <span class="text-sm font-medium">Álbuns</span>
+        </div>
+    </div>
+
+    <div class="grid lg:grid-cols-2 gap-8">
+        <section class="bg-slate-800 p-6 rounded-xl border border-slate-700 shadow-2xl">
+            <div id="form-container">
+            </div>
+        </section>
+
+        <section class="bg-slate-800 p-6 rounded-xl border border-slate-700 shadow-2xl">
+            <h3 class="text-lg font-semibold mb-4 text-slate-300">Explorar e Editar</h3>
+            <div id="table-container" class="space-y-3">
+                <p class="text-slate-500 text-sm">Carregando tabelas...</p>
+            </div>
+        </section>
+    </div>
+</div>
+
+<script>
+    let currentStep = 1;
+    let editingId = null;
+
+    const schemas = {
+        1: {
+            title: "1. Estilos e Gravadoras",
+            isBase: true,
+            fields: [
+                { id: 'styleName', label: 'Estilo Musical', endpoint: '/styles', key: 'nameStyle' },
+                { id: 'recordName', label: 'Gravadora', endpoint: '/records', key: 'name' }
+            ]
+        },
+        2: {
+            title: "2. Cadastro de Artista",
+            endpoint: '/artists',
+            fields: [
+                { id: 'artName', label: 'Nome do Artista', key: 'name' },
+                { id: 'artType', label: 'Tipo (Solo/Banda)', key: 'type' },
+                { id: 'artOrigin', label: 'Origem', key: 'origin' },
+                { id: 'artDate', label: 'Data de Criação', key: 'dateCreated', type: 'date' },
+                { id: 'artRecord', label: 'ID Gravadora (Long)', key: 'recordCode', type: 'number' }
+            ]
+        },
+        3: {
+            title: "3. Cadastro de Álbum",
+            endpoint: '/albuns',
+            fields: [
+                { id: 'albName', label: 'Nome do Álbum', key: 'name' },
+                { id: 'albArtist', label: 'Nome do Artista', key: 'artistsName' },
+                { id: 'albStyle', label: 'Nome do Estilo', key: 'styleName' }
+            ]
+        }
+    };
+
+    function formatDateToBackend(dateString) {
+        if(!dateString) return "";
+        const [year, month, day] = dateString.split('-');
+        return `${day}/${month}/${year}`;
+    }
+
+    function formatDateToInput(dateString) {
+        if(!dateString || !dateString.includes('/')) return "";
+        const [day, month, year] = dateString.split('/');
+        return `${year}-${month}-${day}`;
+    }
+
+    function renderForm() {
+        const container = document.getElementById('form-container');
+        const schema = schemas[currentStep];
+
+        let html = `<h2 class="text-xl font-bold mb-6 ${editingId ? 'text-yellow-400' : 'text-cyan-400'}">
+                        ${editingId ? '📝 Editando Registro' : schema.title}
+                    </h2>`;
+
+        if (schema.isBase && !editingId) {
+            html += `
+                <div class="space-y-6">
+                    ${schema.fields.map(f => `
+                        <div class="p-4 border border-slate-700 rounded bg-slate-900/30">
+                            <label class="block text-sm mb-2 text-slate-400">${f.label}</label>
+                            <input type="text" id="${f.id}" class="w-full bg-slate-900 p-2 rounded border border-slate-700 mb-3 outline-none focus:border-cyan-500">
+                            <button onclick="saveBase('${f.endpoint}', '${f.id}', '${f.key}')" class="bg-cyan-600 hover:bg-cyan-500 text-xs px-4 py-2 rounded transition font-bold">Salvar ${f.label}</button>
+                        </div>
+                    `).join('')}
+                </div>`;
+        } else {
+            html += `<form id="main-form" class="space-y-4">`;
+            schema.fields.forEach(f => {
+                html += `
+                    <div>
+                        <label class="block text-xs text-slate-500 uppercase mb-1">${f.label}</label>
+                        <input type="${f.type || 'text'}" id="${f.id}" class="w-full bg-slate-900 p-2 rounded border border-slate-700 outline-none focus:border-cyan-500" required>
+                    </div>`;
+            });
+            html += `
+                <div class="flex gap-3 pt-4">
+                    <button type="submit" class="flex-1 bg-cyan-600 hover:bg-cyan-500 py-3 rounded font-bold shadow-lg transition">
+                        ${editingId ? 'Atualizar Dados' : 'Salvar e Continuar'}
+                    </button>
+                    ${editingId ? `<button type="button" onclick="cancelEdit()" class="bg-slate-700 px-6 rounded font-bold">Cancelar</button>` : ''}
+                </div>
+            </form>`;
+        }
+
+        if(!editingId) html += `<button onclick="nextStep()" class="mt-8 text-slate-500 hover:text-white text-sm transition">Próximo Passo →</button>`;
+        container.innerHTML = html;
+
+        if((!schema.isBase || editingId) && document.getElementById('main-form')) {
+            document.getElementById('main-form').onsubmit = (e) => handleFormSubmit(e);
+        }
+    }
+
+    async function saveBase(endpoint, inputId, key) {
+        const val = document.getElementById(inputId).value;
+        if(!val) return alert("Preencha o campo");
+        const res = await fetch(endpoint, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ [key]: val })
+        });
+        if(res.ok) { alert('Sucesso!'); document.getElementById(inputId).value = ''; refreshCurrentTable(); }
+    }
+
+    async function handleFormSubmit(e) {
+        e.preventDefault();
+        const schema = schemas[currentStep];
+        const body = editingId ? { id: editingId } : {};
+
+        schema.fields.forEach(f => {
+            let val = document.getElementById(f.id).value;
+            if(f.type === 'number') val = parseInt(val);
+            if(f.type === 'date') val = formatDateToBackend(val);
+            body[f.key] = val;
+        });
+
+        const method = editingId ? 'PUT' : 'POST';
+        const res = await fetch(editingId && schema.isBase ? schemas[currentStep].fields.find(f => f.id === schema.fields[0].id).endpoint : schema.endpoint || schemas[currentStep].fields[0].endpoint, {
+            method: method,
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(body)
+        });
+
+        if(res.ok) {
+            alert(editingId ? 'Atualizado!' : 'Salvo!');
+            editingId = null;
+            if(!editingId) nextStep();
+            refreshCurrentTable();
+            renderForm();
+        }
+    }
+
+    function nextStep() {
+        if(currentStep < 3) {
+            document.getElementById(`step-${currentStep}-visual`).classList.replace('text-cyan-400', 'text-green-500');
+            currentStep++;
+            document.getElementById(`step-${currentStep}-visual`).classList.replace('text-slate-500', 'text-cyan-400');
+            renderForm();
+        } else {
+            alert('Wizard concluído! Reiniciando...');
+            location.reload();
+        }
+    }
+
+    function cancelEdit() { editingId = null; renderForm(); }
+
+    async function refreshCurrentTable() {
+        const container = document.getElementById('table-container');
+        const sections = [
+            { title: 'Estilos', endpoint: '/styles', key: 'nameStyle' },
+            { title: 'Gravadoras', endpoint: '/records', key: 'name' },
+            { title: 'Artistas', endpoint: '/artists', key: 'name' },
+            { title: 'Álbuns', endpoint: '/albuns', key: 'name' }
+        ];
+
+        let html = '';
+        for (const s of sections) {
+            const res = await fetch(s.endpoint);
+            const data = await res.json();
+            html += `
+                <div class="border border-slate-700 rounded-lg overflow-hidden bg-slate-900/20">
+                    <button onclick="this.nextElementSibling.classList.toggle('hidden')" class="w-full flex justify-between p-3 text-sm font-bold hover:bg-slate-700/50 transition">
+                        <span>${s.title} (${data.length})</span>
+                        <i class="fa-solid fa-caret-down"></i>
+                    </button>
+                    <div class="hidden p-2 border-t border-slate-700">
+                        <table class="w-full text-xs">
+                            <tbody class="divide-y divide-slate-800">
+                                ${data.map(item => `
+                                    <tr>
+                                        <td class="py-2">${item[s.key] || item.name}</td>
+                                        <td class="text-right py-2 space-x-2">
+                                            <button onclick="prepareEdit('${s.endpoint}', ${item.id})" class="text-cyan-500"><i class="fa-solid fa-edit"></i></button>
+                                            <button onclick="deleteItem('${s.endpoint}', ${item.id})" class="text-red-500"><i class="fa-solid fa-trash"></i></button>
+                                        </td>
+                                    </tr>`).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>`;
+        }
+        container.innerHTML = html;
+    }
+
+    async function deleteItem(endpoint, id) {
+        if(confirm('Excluir este item?')) {
+            const res = await fetch(`${endpoint}/${id}`, { method: 'DELETE' });
+            if(res.ok) { alert('Excluído!'); refreshCurrentTable(); }
+            else { alert('Erro: Verifique se este item possui dependências no banco.'); }
+        }
+    }
+
+    async function prepareEdit(endpoint, id) {
+        const res = await fetch(`${endpoint}/${id}`);
+        const item = await res.json();
+        editingId = id;
+
+        if(endpoint === '/styles' || endpoint === '/records') {
+            currentStep = 1;
+            // Ajuste dinâmico do schema para edição de base
+            schemas[1].fields = [{
+                id: endpoint === '/styles' ? 'styleName' : 'recordName',
+                label: 'Nome',
+                key: endpoint === '/styles' ? 'nameStyle' : 'name',
+                endpoint: endpoint
+            }];
+        }
+        else if(endpoint === '/artists') currentStep = 2;
+        else if(endpoint === '/albuns') currentStep = 3;
+
+        renderForm();
+        setTimeout(() => {
+            const schema = schemas[currentStep];
+            schema.fields.forEach(f => {
+                const input = document.getElementById(f.id);
+                if(f.type === 'date') input.value = formatDateToInput(item[f.key]);
+                else input.value = item[f.key] || item.nameStyle || item.name;
+            });
+        }, 50);
+    }
+
+    refreshCurrentTable();
+    renderForm();
+</script>
+</body>
+</html>
