@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Música App API</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-900 text-white font-sans">
+<div class="min-h-screen flex flex-col items-center justify-center p-6">
+    <header class="text-center mb-10">
+        <h1 class="text-5xl font-bold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent mb-4">
+            Música App API by Leynner Roque
+        </h1>
+        <p class="text-slate-400 text-lg">Sua infraestrutura robusta para gestão musical.</p>
+    </header>
+
+    <main class="grid md:grid-cols-2 gap-8 max-w-4xl w-full">
+        <div class="bg-slate-800 p-6 rounded-xl border border-slate-700 shadow-xl">
+            <h2 class="text-xl font-semibold mb-4 text-cyan-400">🚀 Como usar</h2>
+            <p class="text-sm text-slate-300 mb-4">Consuma nossos dados via JSON em qualquer aplicação:</p>
+            <code class="block bg-black p-3 rounded text-green-400 text-xs mb-4">
+                fetch('https://musica-app-quarkus.onrender.com/q/swagger-ui/')<br>
+                .then(res => res.json())
+            </code>
+            <a href="/q/swagger-ui" class="inline-block bg-cyan-600 hover:bg-cyan-500 text-white px-4 py-2 rounded-lg transition">
+                Testar Endpoints
+            </a>
+        </div>
+
+        <div class="bg-slate-800 p-6 rounded-xl border border-slate-700 shadow-xl">
+            <h2 class="text-xl font-semibold mb-4 text-blue-400">📊 Status da API</h2>
+            <ul class="space-y-3 text-sm">
+                <li class="flex items-center"><span class="w-3 h-3 bg-green-500 rounded-full mr-2"></span> Banco Aiven: Conectado</li>
+                <li class="flex items-center"><span class="w-3 h-3 bg-green-500 rounded-full mr-2"></span> Render: Ativo (Cron-job)</li>
+                <li class="flex items-center"><span class="w-3 h-3 bg-green-500 rounded-full mr-2"></span> Documentação: OpenAPI 3.0</li>
+            </ul>
+        </div>
+    </main>
+</div>
+</body>
+</html>
