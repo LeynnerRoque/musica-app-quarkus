@@ -48,7 +48,7 @@ public class ArtistsService {
             repository.persist(entity);
             return "Created";
         }catch (Exception e){
-            log.warn("Error on create Obbject : "+e.getCause());
+            log.warn("Error on create Object : "+e.getCause());
          return "Error on create object";
         }
 
@@ -69,16 +69,19 @@ public class ArtistsService {
             repository.persistAndFlush(entity);
             return response;
         }catch (Exception e){
-            log.warn("Error on update Obbject : "+e.getCause());
+            log.warn("Error on update Object : "+e.getCause());
             return null;
         }
     }
 
     public ArtistsResponse findById(Long id){
         try{
-            return mapper.toResponse(repository.findById(id));
+            return listAll().stream()
+                    .filter(a->a.getId().equals(id))
+                    .findFirst().get();
+            //return mapper.toResponse(repository.find("id = :id", Parameters.with("id", id)).firstResult());
         } catch (Exception e) {
-            log.warn("Error on find Obbject : "+e.getCause());
+            log.warn("Error on find Object : "+e.getCause());
             return null;
         }
 
@@ -88,7 +91,7 @@ public class ArtistsService {
         try{
             return mapper.tolist(repository.listAll());
         } catch (Exception e) {
-            log.warn("Error on list Obbject : "+e.getCause());
+            log.warn("Error on list Object : "+e.getCause());
             return null;
         }
 

@@ -147,11 +147,123 @@
         if(!editingId) html += `<button onclick="nextStep()" class="mt-8 text-slate-500 hover:text-white text-sm transition">Próximo Passo →</button>`;
         container.innerHTML = html;
 
-        if((!schema.isBase || editingId) && document.getElementById('main-form')) {
-            document.getElementById('main-form').onsubmit = (e) => handleFormSubmit(e);
+        const form = document.getElementById('main-form');
+        if(form) {
+            form.onsubmit = (e) => handleFormSubmit(e);
         }
     }
 
+    async function handleFormSubmit(e) {
+        e.preventDefault();
+        const schema = schemas[currentStep];
+
+        // Determina o endpoint correto. Se for base (Style/Record) em edição, pega o endpoint do campo
+        const endpoint = editingId && schema.isBase ? schema.fields[0].endpoint : schema.endpoint;
+
+        const body = editingId ? { id: editingId } : {};
+
+        schema.fields.forEach(f => {
+            let val = document.getElementById(f.id).value;
+            if(f.type === 'number') val = parseInt(val);
+            if(f.type === 'date') val = formatDateToBackend(val);
+            body[f.key] = val;
+        });
+
+        const method = editingId ? 'PUT' : 'POST';
+
+        try {
+            const res = await fetch(endpoint, {
+                method: method,
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(body)
+            });
+
+            if(res.ok) {
+                alert(editingId ? 'Registro atualizado com sucesso!' : 'Salvo com sucesso!');
+                const wasEditing = editingId !== null;
+                editingId = null;
+
+                // Se era uma edição de base, volta os campos originais do schema
+                if(wasEditing && schema.isBase) {
+                    schemas[1].fields = [
+                        { id: 'styleName', label: 'Estilo Musical', endpoint: '/styles', key: 'nameStyle' },
+                        { id: 'recordName', label: 'Gravadora', endpoint: '/records', key: 'name' }
+                    ];
+                }
+
+                refreshCurrentTable();
+                if(!wasEditing) nextStep();
+                else renderForm();
+            } else {
+                const errorText = await res.text();
+                alert('Erro na operação: ' + errorText);
+            }
+        } catch (error) {
+            alert('Erro de conexão com o servidor.');
+        }
+    }
+
+    async function prepareEdit(endpoint, id) {
+        try {
+            const res = await fetch(`${endpoint}/${id}`);
+            if(!res.ok) throw new Error("Erro ao buscar dados");
+            const item = await res.json();
+            editingId = id;
+
+            // Define o passo correto baseado no endpoint
+            if(endpoint.includes('styles') || endpoint.includes('records')) {
+                currentStep = 1;
+                schemas[1].fields = [{
+                    id: endpoint.includes('styles') ? 'styleName' : 'recordName',
+                    label: endpoint.includes('styles') ? 'Editar Estilo' : 'Editar Gravadora',
+                    key: endpoint.includes('styles') ? 'nameStyle' : 'name',
+                    endpoint: endpoint
+                }];
+            }
+            else if(endpoint.includes('artists')) currentStep = 2;
+            else if(endpoint.includes('albuns')) currentStep = 3;
+
+            renderForm();
+
+            setTimeout(() => {
+                const schema = schemas[currentStep];
+                schema.fields.forEach(f => {
+                    const input = document.getElementById(f.id);
+                    if(!input) return;
+
+                    if(f.type === 'date') {
+                        input.value = formatDateToInput(item[f.key]);
+                    }
+                    // AJUSTE AQUI: Se for artista e o campo for recordCode
+                    else if(f.key === 'recordCode') {
+                        // Como o ArtistsResponse traz 'record' (nome), mas precisamos do ID para o PUT
+                        // Se você não tiver o ID no Response, o ideal é deixar vazio para o usuário preencher
+                        // ou ajustar seu DTO Java para incluir o recordId
+                        input.value = item.recordCode || "";
+                    } else {
+                        // Preenche com o valor da chave ou fallback para nomes comuns
+                        input.value = item[f.key] || item.nameStyle || item.name || "";
+                    }
+                });
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }, 100);
+        } catch (e) {
+            console.error(e);
+            alert("Erro técnico ao carregar edição. Verifique o console.");
+        }
+    }
+
+    function cancelEdit() {
+        editingId = null;
+        // Restaura campos da base caso estivesse editando estilo/gravadora
+        schemas[1].fields = [
+            { id: 'styleName', label: 'Estilo Musical', endpoint: '/styles', key: 'nameStyle' },
+            { id: 'recordName', label: 'Gravadora', endpoint: '/records', key: 'name' }
+        ];
+        renderForm();
+    }
+
+    // Mantém as outras funções (saveBase, deleteItem, nextStep, refreshCurrentTable) como estavam
     async function saveBase(endpoint, inputId, key) {
         const val = document.getElementById(inputId).value;
         if(!val) return alert("Preencha o campo");
@@ -163,47 +275,31 @@
         if(res.ok) { alert('Sucesso!'); document.getElementById(inputId).value = ''; refreshCurrentTable(); }
     }
 
-    async function handleFormSubmit(e) {
-        e.preventDefault();
-        const schema = schemas[currentStep];
-        const body = editingId ? { id: editingId } : {};
-
-        schema.fields.forEach(f => {
-            let val = document.getElementById(f.id).value;
-            if(f.type === 'number') val = parseInt(val);
-            if(f.type === 'date') val = formatDateToBackend(val);
-            body[f.key] = val;
-        });
-
-        const method = editingId ? 'PUT' : 'POST';
-        const res = await fetch(editingId && schema.isBase ? schemas[currentStep].fields.find(f => f.id === schema.fields[0].id).endpoint : schema.endpoint || schemas[currentStep].fields[0].endpoint, {
-            method: method,
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(body)
-        });
-
-        if(res.ok) {
-            alert(editingId ? 'Atualizado!' : 'Salvo!');
-            editingId = null;
-            if(!editingId) nextStep();
-            refreshCurrentTable();
-            renderForm();
-        }
-    }
-
     function nextStep() {
         if(currentStep < 3) {
-            document.getElementById(`step-${currentStep}-visual`).classList.replace('text-cyan-400', 'text-green-500');
+            const currentVisual = document.getElementById(`step-${currentStep}-visual`);
+            if(currentVisual) {
+                currentVisual.classList.remove('text-cyan-400');
+                currentVisual.classList.add('text-green-500');
+            }
             currentStep++;
-            document.getElementById(`step-${currentStep}-visual`).classList.replace('text-slate-500', 'text-cyan-400');
+            const nextVisual = document.getElementById(`step-${currentStep}-visual`);
+            if(nextVisual) nextVisual.classList.replace('text-slate-500', 'text-cyan-400');
             renderForm();
         } else {
-            alert('Wizard concluído! Reiniciando...');
+            alert('Wizard concluído! Voltando ao início.');
+            currentStep = 1;
             location.reload();
         }
     }
 
-    function cancelEdit() { editingId = null; renderForm(); }
+    async function deleteItem(endpoint, id) {
+        if(confirm('Excluir este item permanentemente?')) {
+            const res = await fetch(`${endpoint}/${id}`, { method: 'DELETE' });
+            if(res.ok) { refreshCurrentTable(); }
+            else { alert('Erro: Este item pode estar sendo usado em outro cadastro.'); }
+        }
+    }
 
     async function refreshCurrentTable() {
         const container = document.getElementById('table-container');
@@ -216,68 +312,33 @@
 
         let html = '';
         for (const s of sections) {
-            const res = await fetch(s.endpoint);
-            const data = await res.json();
-            html += `
-                <div class="border border-slate-700 rounded-lg overflow-hidden bg-slate-900/20">
-                    <button onclick="this.nextElementSibling.classList.toggle('hidden')" class="w-full flex justify-between p-3 text-sm font-bold hover:bg-slate-700/50 transition">
-                        <span>${s.title} (${data.length})</span>
-                        <i class="fa-solid fa-caret-down"></i>
-                    </button>
-                    <div class="hidden p-2 border-t border-slate-700">
-                        <table class="w-full text-xs">
-                            <tbody class="divide-y divide-slate-800">
-                                ${data.map(item => `
-                                    <tr>
-                                        <td class="py-2">${item[s.key] || item.name}</td>
-                                        <td class="text-right py-2 space-x-2">
-                                            <button onclick="prepareEdit('${s.endpoint}', ${item.id})" class="text-cyan-500"><i class="fa-solid fa-edit"></i></button>
-                                            <button onclick="deleteItem('${s.endpoint}', ${item.id})" class="text-red-500"><i class="fa-solid fa-trash"></i></button>
-                                        </td>
-                                    </tr>`).join('')}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>`;
+            try {
+                const res = await fetch(s.endpoint);
+                const data = await res.json();
+                html += `
+                    <div class="border border-slate-700 rounded-lg overflow-hidden bg-slate-900/20">
+                        <button onclick="this.nextElementSibling.classList.toggle('hidden')" class="w-full flex justify-between p-3 text-sm font-bold hover:bg-slate-700/50 transition">
+                            <span>${s.title} (${data.length})</span>
+                            <i class="fa-solid fa-caret-down"></i>
+                        </button>
+                        <div class="hidden p-2 border-t border-slate-700 bg-slate-800/40">
+                            <table class="w-full text-xs">
+                                <tbody class="divide-y divide-slate-800">
+                                    ${data.map(item => `
+                                        <tr class="hover:bg-slate-700/20">
+                                            <td class="py-2 px-1 text-slate-300 font-medium">${item[s.key] || item.name}</td>
+                                            <td class="text-right py-2 space-x-3">
+                                                <button onclick="prepareEdit('${s.endpoint}', ${item.id})" class="text-cyan-500 hover:text-cyan-300 transition" title="Editar"><i class="fa-solid fa-edit"></i></button>
+                                                <button onclick="deleteItem('${s.endpoint}', ${item.id})" class="text-red-500 hover:text-red-400 transition" title="Excluir"><i class="fa-solid fa-trash"></i></button>
+                                            </td>
+                                        </tr>`).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>`;
+            } catch(e) { console.error("Erro na seção " + s.title); }
         }
-        container.innerHTML = html;
-    }
-
-    async function deleteItem(endpoint, id) {
-        if(confirm('Excluir este item?')) {
-            const res = await fetch(`${endpoint}/${id}`, { method: 'DELETE' });
-            if(res.ok) { alert('Excluído!'); refreshCurrentTable(); }
-            else { alert('Erro: Verifique se este item possui dependências no banco.'); }
-        }
-    }
-
-    async function prepareEdit(endpoint, id) {
-        const res = await fetch(`${endpoint}/${id}`);
-        const item = await res.json();
-        editingId = id;
-
-        if(endpoint === '/styles' || endpoint === '/records') {
-            currentStep = 1;
-            // Ajuste dinâmico do schema para edição de base
-            schemas[1].fields = [{
-                id: endpoint === '/styles' ? 'styleName' : 'recordName',
-                label: 'Nome',
-                key: endpoint === '/styles' ? 'nameStyle' : 'name',
-                endpoint: endpoint
-            }];
-        }
-        else if(endpoint === '/artists') currentStep = 2;
-        else if(endpoint === '/albuns') currentStep = 3;
-
-        renderForm();
-        setTimeout(() => {
-            const schema = schemas[currentStep];
-            schema.fields.forEach(f => {
-                const input = document.getElementById(f.id);
-                if(f.type === 'date') input.value = formatDateToInput(item[f.key]);
-                else input.value = item[f.key] || item.nameStyle || item.name;
-            });
-        }, 50);
+        container.innerHTML = html || '<p class="text-slate-500">Nenhum dado encontrado.</p>';
     }
 
     refreshCurrentTable();

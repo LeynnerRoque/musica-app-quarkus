@@ -49,7 +49,7 @@ public class ArtistsController {
         return Response.ok(service.listAll()).build();
     }
 
-    @Path("/{name}")
+    @Path("/find/{name}")
     @GET
     public Response findByName(@PathParam("name") String name){
         return Response.ok(service.findByName(name)).build();
