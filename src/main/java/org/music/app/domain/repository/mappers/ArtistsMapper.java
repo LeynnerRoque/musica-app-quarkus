@@ -40,7 +40,7 @@ public class ArtistsMapper {
 
     public Artists toEntityByResponse(ArtistsResponse request){
         var entity = new Artists();
-        entity.setId(request.getId().intValue());
+        entity.setId(request.getId());
         entity.setName(request.getName());
         entity.setType(request.getType());
         entity.setOrigin(request.getOrigin());

@@ -16,7 +16,7 @@ public class EntityStubs {
 
     public Albuns getAlbuns(){
         albuns = new Albuns();
-        albuns.setId(1);
+        albuns.setId(1L);
         albuns.setName("Test Stubs");
         albuns.setArtistsByArtistsId(getArtists());
         albuns.setStyleByStyleId(getStyle());
@@ -30,14 +30,14 @@ public class EntityStubs {
 
     public Style getStyle() {
         style = new Style();
-        style.setId(1);
+        style.setId(1L);
         style.setNameStyle("Stub Style");
         return style;
     }
 
     public Artists getArtists(){
         artists = new Artists();
-        artists.setId(1);
+        artists.setId(1L);
         artists.setName("The Stubs");
         artists.setType("Stubies");
         artists.setOrigin("England");
@@ -49,7 +49,7 @@ public class EntityStubs {
 
     public Record getRecords() {
         records = new Record();
-        records.setId(1);
+        records.setId(1L);
         records.setName("The Stub Records");
         return records;
     }

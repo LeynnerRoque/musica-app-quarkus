@@ -15,7 +15,7 @@ public class Record {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
     @Column(name = "id", nullable = false)
-    private int id;
+    private Long id;
     @Basic
     @Column(name = "name", nullable = true, length = 100)
     private String name;

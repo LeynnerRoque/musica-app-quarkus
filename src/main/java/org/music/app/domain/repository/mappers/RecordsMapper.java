@@ -28,7 +28,7 @@ public class RecordsMapper {
 
     public Record toEntityByResponse(RecordsResponse request){
         var entity = new Record();
-        entity.setId(request.getId().intValue());
+        entity.setId(request.getId());
         entity.setName(request.getName());
         return entity;
     }

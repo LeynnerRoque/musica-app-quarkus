@@ -59,7 +59,7 @@ public class ArtistsService {
         try{
             var entity = repository.findByIdOptional(response.getId()).get();
             var record = service.findByName(response.getRecord());
-            entity.setId(response.getId().intValue());
+            entity.setId(response.getId());
             entity.setName(response.getName());
             entity.setType(response.getType());
             entity.setOrigin(response.getOrigin());

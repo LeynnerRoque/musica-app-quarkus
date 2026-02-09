@@ -29,7 +29,7 @@ public class StyleMapper {
 
     public Style toEntityByResponse(StyleResponse request){
         var entity = new Style();
-        entity.setId(request.getId().intValue());
+        entity.setId(request.getId());
         entity.setNameStyle(request.getNameStyle());
         return entity;
     }

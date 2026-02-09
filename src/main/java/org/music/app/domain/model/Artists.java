@@ -16,7 +16,7 @@ public class Artists {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
     @Column(name = "id", nullable = false)
-    private int id;
+    private Long id;
     @Basic
     @Column(name = "name", nullable = true, length = 100)
     private String name;
@@ -34,5 +34,7 @@ public class Artists {
     @ManyToOne
     @JoinColumn(name = "record_id", referencedColumnName = "id", nullable = false)
     private Record recordByRecordId;
+    @Column(name = "spotify_code")
+    private String spotifyCode;
 
 }
