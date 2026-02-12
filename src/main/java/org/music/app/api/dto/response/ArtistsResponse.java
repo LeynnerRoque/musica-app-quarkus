@@ -12,5 +12,6 @@ public class ArtistsResponse {
     private String type;
     private String dateCreated;
     private String origin;
+    private String spotifyCode;
     private String record;
 }

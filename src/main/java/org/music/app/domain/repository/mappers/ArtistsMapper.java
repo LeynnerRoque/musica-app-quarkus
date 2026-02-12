@@ -44,6 +44,7 @@ public class ArtistsMapper {
         entity.setName(request.getName());
         entity.setType(request.getType());
         entity.setOrigin(request.getOrigin());
+        entity.setSpotifyCode(request.getSpotifyCode());
         entity.setDateCreate(converter.convertToDate(request.getDateCreated()));
         return entity;
     }
