@@ -65,6 +65,7 @@ public class ArtistsService {
             entity.setOrigin(response.getOrigin());
             entity.setDateCreate(converter.convertToDate(response.getDateCreated()));
             entity.setRecordByRecordId(recordsMapper.toEntityByResponse(record));
+            entity.setSpotifyCode(response.getSpotifyCode());
 
             repository.persistAndFlush(entity);
             return response;

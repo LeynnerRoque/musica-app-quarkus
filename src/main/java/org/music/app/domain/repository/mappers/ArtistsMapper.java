@@ -25,6 +25,7 @@ public class ArtistsMapper {
         response.setOrigin(artists.getOrigin());
         response.setDateCreated(converter.convertToFormat(artists.getDateCreate()));
         response.setRecord(artists.getRecordByRecordId().getName());
+        response.setSpotifyCode(artists.getSpotifyCode());
         return response;
     }
 
