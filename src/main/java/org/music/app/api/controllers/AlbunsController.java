@@ -58,4 +58,9 @@ public class AlbunsController {
         return Response.ok(service.getByOtherAPI(id)).build();
     }
 
+    @Path("/external/{id}")
+    @GET
+    public Response findByExternalAPI(@PathParam("id") String id){
+        return Response.ok(service.findByExternal(id)).build();
+    }
 }

@@ -9,6 +9,7 @@ import org.eclipse.microprofile.faulttolerance.Retry;
 import org.eclipse.microprofile.faulttolerance.Timeout;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.music.app.api.client.ClientAPI;
+import org.music.app.api.client.response.AlbumsSpotifyResponse;
 import org.music.app.api.dto.request.AlbunsRequest;
 import org.music.app.api.dto.response.AlbunsResponse;
 import org.music.app.business.fallbacks.FallbackServiceHandler;
@@ -116,6 +117,15 @@ public class AlbunsService {
         } catch (Exception e) {
             log.warn("Error on find Object : "+e.getCause());
             return null;
+        }
+    }
+
+    public AlbumsSpotifyResponse findByExternal(String code){
+        try{
+            return clientAPI.getByCode(code);
+        } catch (Exception e) {
+            log.warn("Error on find Object : "+e.getCause());
+            return new AlbumsSpotifyResponse();
         }
     }
 
